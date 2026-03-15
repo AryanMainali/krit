@@ -78,7 +78,6 @@ export default function EditAssignmentPage() {
     const { register, control, handleSubmit, formState: { errors, isDirty }, watch, setValue, reset } = useForm<AssignmentCreateForm>({
         resolver: zodResolver(assignmentCreateSchema),
         defaultValues: {
-            course_id: courseId,
             title: '', description: '', instructions: '',
             language_id: undefined as unknown as number,
             starter_code: '', solution_code: '',
