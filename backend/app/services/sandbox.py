@@ -61,25 +61,29 @@ class SandboxExecutor:
     def _find_java_main_class(self, code_path: str) -> str:
         """Scan .java files to find the class containing public static void main."""
         java_files = glob.glob(os.path.join(code_path, "*.java"))
-        main_pattern = re.compile(
-            r'public\s+static\s+void\s+main\s*\(\s*String',
-            re.DOTALL
-        )
-        class_pattern = re.compile(
-            r'(?:public\s+)?class\s+(\w+)'
-        )
-        
+        main_pattern = re.compile(r'public\s+static\s+void\s+main\s*\(\s*String')
+        public_class_pattern = re.compile(r'\bpublic\s+class\s+(\w+)')
+        any_class_pattern = re.compile(r'\bclass\s+(\w+)')
+
         for jf in java_files:
             try:
                 with open(jf, 'r', encoding='utf-8', errors='ignore') as f:
                     content = f.read()
-                if main_pattern.search(content):
-                    match = class_pattern.search(content)
-                    if match:
-                        return match.group(1)
+                main_match = main_pattern.search(content)
+                if not main_match:
+                    continue
+                # Prefer public class — Java requires it to match the filename
+                match = public_class_pattern.search(content)
+                if match:
+                    return match.group(1)
+                # No public class: find the last class declaration before main
+                content_before_main = content[:main_match.start()]
+                class_matches = list(any_class_pattern.finditer(content_before_main))
+                if class_matches:
+                    return class_matches[-1].group(1)
             except Exception:
                 continue
-        
+
         # Fallback: use filename without extension of first .java file
         if java_files:
             return os.path.splitext(os.path.basename(java_files[0]))[0]
