@@ -62,11 +62,11 @@ export default function AssignmentsPage() {
         description: '',
         course_id: '',
         due_date: '',
-        language: 'python',
+        language_id: '',
         max_score: 100,
         is_published: false,
         allow_late: true,
-        late_penalty: 10,
+        late_penalty_per_day: 10,
     });
 
     const { data: assignments = [], isLoading } = useQuery({
@@ -94,14 +94,24 @@ export default function AssignmentsPage() {
                 description: '',
                 course_id: '',
                 due_date: '',
-                language: 'python',
+                language_id: '',
                 max_score: 100,
                 is_published: false,
                 allow_late: true,
-                late_penalty: 10,
+                late_penalty_per_day: 10,
             });
         },
     });
+
+    const handleCreateAssignment = () => {
+        const payload = {
+            ...newAssignment,
+            course_id: parseInt(newAssignment.course_id, 10),
+            language_id: parseInt(newAssignment.language_id, 10),
+        };
+
+        createMutation.mutate(payload);
+    };
 
     const deleteMutation = useMutation({
         mutationFn: (assignmentId: number) => apiClient.deleteAssignment(assignmentId),
@@ -415,9 +425,9 @@ export default function AssignmentsPage() {
                             />
                             <Select
                                 label="Programming Language"
-                                value={newAssignment.language}
-                                onChange={(e) => setNewAssignment(prev => ({ ...prev, language: e.target.value }))}
-                                options={languages.map((l: any) => ({ value: l.name, label: l.display_name || l.name }))}
+                                value={newAssignment.language_id}
+                                onChange={(e) => setNewAssignment(prev => ({ ...prev, language_id: e.target.value }))}
+                                options={languages.map((l: any) => ({ value: l.id.toString(), label: l.display_name || l.name }))}
                                 placeholder="Select language"
                             />
                         </div>
@@ -446,8 +456,8 @@ export default function AssignmentsPage() {
                                 <Input
                                     label="Late Penalty (%)"
                                     type="number"
-                                    value={newAssignment.late_penalty?.toString() || '10'}
-                                    onChange={(e) => setNewAssignment(prev => ({ ...prev, late_penalty: parseInt(e.target.value) }))}
+                                    value={newAssignment.late_penalty_per_day?.toString() || '10'}
+                                    onChange={(e) => setNewAssignment(prev => ({ ...prev, late_penalty_per_day: parseInt(e.target.value) }))}
                                 />
                             )}
                             <Switch
@@ -463,8 +473,8 @@ export default function AssignmentsPage() {
                             Cancel
                         </Button>
                         <Button
-                            onClick={() => createMutation.mutate(newAssignment)}
-                            disabled={createMutation.isPending}
+                            onClick={handleCreateAssignment}
+                            disabled={createMutation.isPending || !newAssignment.course_id || !newAssignment.language_id}
                         >
                             {createMutation.isPending ? 'Creating...' : 'Create Assignment'}
                         </Button>
