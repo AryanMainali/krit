@@ -719,6 +719,10 @@ async def websocket_interactive_run(websocket: WebSocket, assignment_id: int):
                 await websocket.send_json({"type": "error", "message": "Invalid file name"})
                 await websocket.close()
                 return
+            if not any(f["name"].endswith(ext) for ext in (".py", ".java", ".cpp", ".c", ".js", ".ts", ".cs")):
+                await websocket.send_json({"type": "error", "message": f"Unsupported file type: {f['name']}"})
+                await websocket.close()
+                return
 
         temp_dir = tempfile.mkdtemp(prefix="assignment_interactive_")
         for f in files:

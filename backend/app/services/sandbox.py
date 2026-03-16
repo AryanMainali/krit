@@ -1,6 +1,7 @@
 import os
 import re
 import glob
+import shlex
 import subprocess
 import tempfile
 import shutil
@@ -99,11 +100,11 @@ class SandboxExecutor:
                 if os.path.basename(pf).lower() == "main.py":
                     entry = "main.py"
                     break
-            return f"python3 {entry} {a}".strip()
+            return f"python3 {shlex.quote(entry)} {a}".strip()
         
         elif lang == "java":
             main_class = self._find_java_main_class(code_path)
-            return f"javac *.java && java {main_class} {a}".strip()
+            return f"javac *.java && java {shlex.quote(main_class)} {a}".strip()
         
         elif lang == "cpp" or lang == "c++":
             return f"g++ -std=c++17 -o program *.cpp && ./program {a}".strip()
@@ -120,19 +121,19 @@ class SandboxExecutor:
                 if os.path.basename(jf).lower() in ("main.js", "index.js"):
                     entry = os.path.basename(jf)
                     break
-            return f"node {entry} {a}".strip()
+            return f"node {shlex.quote(entry)} {a}".strip()
         
         elif lang == "typescript":
             ts_files = glob.glob(os.path.join(code_path, "*.ts"))
             if not ts_files:
                 return "echo 'No .ts files found'"
             entry = os.path.basename(ts_files[0])
-            return f"ts-node {entry} {a}".strip()
+            return f"ts-node {shlex.quote(entry)} {a}".strip()
         
         elif lang in ("csharp", "c#"):
             cs_files = glob.glob(os.path.join(code_path, "*.cs"))
             cs_file = os.path.basename(cs_files[0]) if cs_files else "Program.cs"
-            return f"mcs -out:program.exe {cs_file} && mono program.exe {a}".strip()
+            return f"mcs -out:program.exe {shlex.quote(cs_file)} && mono program.exe {a}".strip()
         
         return "echo 'Unsupported language'"
 
