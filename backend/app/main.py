@@ -98,7 +98,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
-    allow_origin_regex="https://kriterion-.*\.vercel\.app"
+    allow_origin_regex="https://kriterion-.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -175,9 +175,14 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
+    import os
+    
+    # Grab the dynamic port from Railway, fallback to 8000 locally
+    port = int(os.getenv("PORT", 8000))
+    
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=port,
         reload=settings.DEBUG
     )
