@@ -726,6 +726,12 @@ export default function StudentAssignmentPage() {
                             </div>
                             <input ref={fileInputRef} type="file" multiple hidden accept={allowedExtensions.join(',')} onChange={(e) => { handleUpload(e.target.files); e.target.value = '' }} />
 
+                            {assignment?.language?.name?.toLowerCase() === 'java' && (
+                                <p className="text-[10px] text-yellow-400/70 px-3 pb-1 leading-tight">
+                                    ⚠️ Filename must match the public class name (e.g. <code className="font-mono">Solution.java</code> → <code className="font-mono">public class Solution</code>)
+                                </p>
+                            )}
+
                             <div className="px-2 py-1">
                                 <div className="flex items-center gap-1 px-2 py-1 text-[11px] text-[#cccccc]">
                                     <ChevronDown className="w-3 h-3" />
