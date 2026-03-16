@@ -10,7 +10,7 @@ from app.core.language_extensions import get_extensions_for_language
 router = APIRouter()
 
 
-@router.get("/", response_model=List[LanguageWithExtensions])
+@router.get("", response_model=List[LanguageWithExtensions])
 def get_languages(
     db: Session = Depends(get_db),
     active_only: bool = True,
