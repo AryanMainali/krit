@@ -148,7 +148,10 @@ class SandboxExecutor:
     ) -> Dict[str, Any]:
         if os.path.exists("/.dockerenv"):
             return self._run_local(command, code_path, stdin_input)
-        
+
+        if shutil.which("docker") is None:
+            return self._run_local(command, code_path, stdin_input)
+
         if settings.ENVIRONMENT == "development":
             return self._run_local(command, code_path, stdin_input)
         
