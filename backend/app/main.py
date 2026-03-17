@@ -17,6 +17,14 @@ def seed_languages():
     """Seed default programming languages to database"""
     db = SessionLocal()
     try:
+        allowed_names = {lang_data.get("name") for lang_data in DEFAULT_LANGUAGES}
+
+        # Keep only allowlisted languages active.
+        for existing_lang in db.query(Language).all():
+            should_be_active = existing_lang.name in allowed_names
+            if existing_lang.is_active != should_be_active:
+                existing_lang.is_active = should_be_active
+
         for lang_data in DEFAULT_LANGUAGES:
             existing = db.query(Language).filter(Language.name == lang_data.get("name")).first()
             if not existing:
@@ -29,6 +37,8 @@ def seed_languages():
                 lang = Language(**filtered_data)
                 db.add(lang)
                 logger.info(f"Added language: {lang_data.get('display_name')}")
+            else:
+                existing.is_active = True
         db.commit()
     except Exception as e:
         logger.error(f"Error seeding languages: {str(e)}")

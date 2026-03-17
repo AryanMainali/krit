@@ -104,43 +104,4 @@ DEFAULT_LANGUAGES = [
         "monaco_language": "java",
         "is_active": True
     },
-    {
-        "name": "cpp",
-        "display_name": "C++",
-        "version": "17",
-        "file_extension": ".cpp",
-        "compile_command": "g++ -std=c++17 -o {output} {filename}",
-        "run_command": "./{output}",
-        "docker_image": "gcc:latest",
-        "default_timeout_seconds": 30,
-        "default_memory_mb": 256,
-        "monaco_language": "cpp",
-        "is_active": True
-    },
-    {
-        "name": "c",
-        "display_name": "C",
-        "version": "11",
-        "file_extension": ".c",
-        "compile_command": "gcc -std=c11 -o {output} {filename}",
-        "run_command": "./{output}",
-        "docker_image": "gcc:latest",
-        "default_timeout_seconds": 30,
-        "default_memory_mb": 256,
-        "monaco_language": "c",
-        "is_active": True
-    },
-    {
-        "name": "javascript",
-        "display_name": "JavaScript",
-        "version": "ES2022",
-        "file_extension": ".js",
-        "compile_command": None,
-        "run_command": "node {filename}",
-        "docker_image": "node:20-slim",
-        "default_timeout_seconds": 30,
-        "default_memory_mb": 256,
-        "monaco_language": "javascript",
-        "is_active": True
-    },
 ]

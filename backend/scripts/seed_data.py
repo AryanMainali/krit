@@ -370,16 +370,24 @@ def seed_database():
 
         # ── Languages ──
         print("\n[1/7] Languages")
+        allowed_names = {lang_data["name"] for lang_data in DEFAULT_LANGUAGES}
+
+        for existing_lang in db.query(Language).all():
+            existing_lang.is_active = existing_lang.name in allowed_names
+
         allowed_keys = {
             "name", "display_name", "file_extension",
             "compile_command", "run_command", "docker_image",
             "default_timeout_seconds", "default_memory_mb", "is_active",
         }
         for lang_data in DEFAULT_LANGUAGES:
-            if not db.query(Language).filter(Language.name == lang_data["name"]).first():
+            existing = db.query(Language).filter(Language.name == lang_data["name"]).first()
+            if not existing:
                 filtered = {k: v for k, v in lang_data.items() if k in allowed_keys}
                 db.add(Language(**filtered))
                 print(f"  + {filtered.get('display_name', lang_data['name'])}")
+            else:
+                existing.is_active = True
         db.commit()
 
         # ── Achievements & Skills ──

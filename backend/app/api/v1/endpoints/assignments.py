@@ -40,6 +40,7 @@ from app.schemas.assignment import (
 )
 
 from app.core.logging import logger
+from app.core.language_extensions import ASSIGNMENT_LANGUAGE_ALLOWLIST
 from app.core.security import decode_token
 from app.core.database import SessionLocal
 from app.services.autograding import autograding_service
@@ -342,6 +343,8 @@ async def create_assignment(
         language_obj = db.query(Language).filter(Language.id == assignment_in.language_id).first()
         if not language_obj:
             raise HTTPException(status_code=422, detail="Language not found")
+        if language_obj.name not in ASSIGNMENT_LANGUAGE_ALLOWLIST or not language_obj.is_active:
+            raise HTTPException(status_code=422, detail="Only Python and Java are supported")
 
         available_columns = {c.name for c in Assignment.__table__.columns}
         assignment_data_in = assignment_in.model_dump(exclude={"rubric", "test_cases", "test_suites"})
@@ -670,6 +673,10 @@ async def websocket_interactive_run(websocket: WebSocket, assignment_id: int):
             await websocket.send_json({"type": "error", "message": "Language not configured"})
             await websocket.close()
             return
+        if (assignment.language.name or "").lower() not in ASSIGNMENT_LANGUAGE_ALLOWLIST:
+            await websocket.send_json({"type": "error", "message": "Only Python and Java are supported"})
+            await websocket.close()
+            return
     finally:
         db.close()
 
@@ -719,7 +726,7 @@ async def websocket_interactive_run(websocket: WebSocket, assignment_id: int):
                 await websocket.send_json({"type": "error", "message": "Invalid file name"})
                 await websocket.close()
                 return
-            if not any(f["name"].endswith(ext) for ext in (".py", ".java", ".cpp", ".c", ".js", ".ts", ".cs")):
+            if not any(f["name"].endswith(ext) for ext in (".py", ".java")):
                 await websocket.send_json({"type": "error", "message": f"Unsupported file type: {f['name']}"})
                 await websocket.close()
                 return
@@ -883,6 +890,11 @@ async def run_assignment_code(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Assignment language not configured"
+        )
+    if (assignment.language.name or "").lower() not in ASSIGNMENT_LANGUAGE_ALLOWLIST:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Only Python and Java are supported"
         )
     
     # Validate files

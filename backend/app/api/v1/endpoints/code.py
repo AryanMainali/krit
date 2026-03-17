@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_user
 from app.models import User, Language, Assignment, Enrollment, EnrollmentStatus
 from app.core.logging import logger
+from app.core.language_extensions import ASSIGNMENT_LANGUAGE_ALLOWLIST
 from pydantic import BaseModel
 import asyncio
 import tempfile
@@ -49,7 +50,10 @@ def get_languages(
     current_user: User = Depends(get_current_user)
 ):
     """Get all available programming languages"""
-    languages = db.query(Language).filter(Language.is_active == True).all()
+    languages = db.query(Language).filter(
+        Language.is_active == True,
+        Language.name.in_(ASSIGNMENT_LANGUAGE_ALLOWLIST),
+    ).all()
     
     return [
         LanguageResponse(
@@ -73,7 +77,8 @@ async def run_code(
     # Get language
     language = db.query(Language).filter(
         Language.id == request.language_id,
-        Language.is_active == True
+        Language.is_active == True,
+        Language.name.in_(ASSIGNMENT_LANGUAGE_ALLOWLIST),
     ).first()
     
     if not language:

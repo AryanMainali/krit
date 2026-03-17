@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db, require_role
 from app.models import Language, UserRole
 from app.schemas.language import Language as LanguageSchema, LanguageWithExtensions
-from app.core.language_extensions import get_extensions_for_language
+from app.core.language_extensions import ASSIGNMENT_LANGUAGE_ALLOWLIST, get_extensions_for_language
 
 router = APIRouter()
 
@@ -16,7 +16,7 @@ def get_languages(
     active_only: bool = True,
 ):
     """Get all supported programming languages with allowed file extensions for assignments"""
-    query = db.query(Language)
+    query = db.query(Language).filter(Language.name.in_(ASSIGNMENT_LANGUAGE_ALLOWLIST))
     if active_only:
         query = query.filter(Language.is_active == True)
     languages = query.all()
@@ -34,7 +34,10 @@ def get_language(
     db: Session = Depends(get_db),
 ):
     """Get a specific language by ID"""
-    language = db.query(Language).filter(Language.id == language_id).first()
+    language = db.query(Language).filter(
+        Language.id == language_id,
+        Language.name.in_(ASSIGNMENT_LANGUAGE_ALLOWLIST)
+    ).first()
     if not language:
         raise HTTPException(status_code=404, detail="Language not found")
     return language

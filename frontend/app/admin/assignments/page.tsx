@@ -84,6 +84,10 @@ export default function AssignmentsPage() {
         queryFn: () => apiClient.getLanguages(),
     });
 
+    const allowedLanguages = languages.filter((l: any) =>
+        ['python', 'java'].includes((l?.name || '').toLowerCase())
+    );
+
     const createMutation = useMutation({
         mutationFn: (data: any) => apiClient.createAssignment(data),
         onSuccess: () => {
@@ -427,7 +431,7 @@ export default function AssignmentsPage() {
                                 label="Programming Language"
                                 value={newAssignment.language_id}
                                 onChange={(e) => setNewAssignment(prev => ({ ...prev, language_id: e.target.value }))}
-                                options={languages.map((l: any) => ({ value: l.id.toString(), label: l.display_name || l.name }))}
+                                options={allowedLanguages.map((l: any) => ({ value: l.id.toString(), label: l.display_name || l.name }))}
                                 placeholder="Select language"
                             />
                         </div>

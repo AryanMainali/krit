@@ -32,6 +32,7 @@ from app.models import (
 )
 from app.schemas.rubric import RubricItem as RubricItemSchema
 from app.core.logging import logger
+from app.core.language_extensions import ASSIGNMENT_LANGUAGE_ALLOWLIST
 from pydantic import BaseModel, Field
 
 router = APIRouter()
@@ -801,7 +802,10 @@ def get_available_languages(
     current_user: User = Depends(require_role([UserRole.FACULTY]))
 ):
     """Get available programming languages"""
-    languages = db.query(Language).filter(Language.is_active == True).all()
+    languages = db.query(Language).filter(
+        Language.is_active == True,
+        Language.name.in_(ASSIGNMENT_LANGUAGE_ALLOWLIST),
+    ).all()
     
     return [
         {
